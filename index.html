@@ -809,14 +809,28 @@ const LABELS = {
   '02.04-other':'Time Drains (Other)', '04.01-other':'AI Concerns (Other)'
 };
 
+// Fixed field order — must match Apps Script FIELD_ORDER
+const FIELD_ORDER = [
+  'Submitted At', 'Name', 'Job Title', 'Company',
+  'Role', 'Team Size', 'Typical Tuesday', 'Strategic vs Reactive (1-10)', 'Tasks to Eliminate',
+  'Pain Point Ranking', 'Overwhelm Experience', 'Work Below Level', 'Time Drains', 'Time Drains (Other)', 'Energizing Work',
+  'AI Relationship Status', 'Prior AI Experience', 'AI Confidence (1-10)', 'Bar AI Must Clear', 'Aspiration AI Use Case',
+  'AI Concerns', 'AI Concerns (Other)', 'Biggest Fear', 'Walk-Away Trigger', 'Trust in AI Output (1-10)', 'Org AI Stance', 'Trust Threshold',
+  'Outcome Priority Ranking', 'Ideal Future State (6mo)', 'Personalized vs General (1-10)', 'Word of Mouth Description', 'ROI Frame',
+  'Questions Before Buying', 'Purchase Conditions', 'Referral vs Research (1-10)', 'Price Anchors', 'Additional Thoughts', 'Interest in 30-min Session'
+];
+
 // ── Collect responses ──
 function collectResponses() {
-  const r = {
-    'Submitted At': new Date().toLocaleString('en-US', { dateStyle:'medium', timeStyle:'short' }),
-    'Name': document.getElementById('resp-name').value.trim(),
-    'Job Title': document.getElementById('resp-title').value.trim(),
-    'Company': document.getElementById('resp-company').value.trim()
-  };
+  // Start with every field pre-populated as empty string
+  const r = {};
+  FIELD_ORDER.forEach(f => r[f] = '');
+
+  // Overwrite with actual values
+  r['Submitted At'] = new Date().toLocaleString('en-US', { dateStyle:'medium', timeStyle:'short' });
+  r['Name'] = document.getElementById('resp-name').value.trim();
+  r['Job Title'] = document.getElementById('resp-title').value.trim();
+  r['Company'] = document.getElementById('resp-company').value.trim();
 
   document.querySelectorAll('[data-qid][data-type]').forEach(group => {
     const qid = group.dataset.qid, type = group.dataset.type;
@@ -832,7 +846,7 @@ function collectResponses() {
     } else if (type === 'rank') {
       const parts = [];
       group.querySelectorAll('.rank-input').forEach(inp => {
-        if (inp.value) parts.push(`${inp.data-label}=${inp.value}`);
+        if (inp.value) parts.push(`${inp.getAttribute('data-label')} = Rank ${inp.value}`);
       });
       if (parts.length) r[label] = parts.join(' | ');
     }
@@ -844,9 +858,9 @@ function collectResponses() {
     if (sel) r[label] = sel.dataset.val;
   });
 
-  document.querySelectorAll('.q-textarea[data-qid]').forEach(ta => {
+  document.querySelectorAll('.q-textarea[data-qid],.q-freetext-input[data-qid]').forEach(ta => {
     const label = LABELS[ta.dataset.qid] || ta.dataset.qid;
-    if (ta.value.trim()) r[label] = ta.value.trim();
+    r[label] = ta.value.trim();
   });
 
   return r;
@@ -866,16 +880,6 @@ async function submitForm() {
 
   btn.disabled = true;
   btn.innerHTML = `<div style="width:14px;height:14px;border:2px solid rgba(10,15,30,.3);border-top-color:#0a0f1e;border-radius:50%;animation:spin .8s linear infinite"></div> Submitting…`;
-
-  // Fix rank collection (data-label attribute)
-  document.querySelectorAll('[data-type="rank"]').forEach(group => {
-    const label = LABELS[group.dataset.qid] || group.dataset.qid;
-    const parts = [];
-    group.querySelectorAll('.rank-input').forEach(inp => {
-      if (inp.value) parts.push(`${inp.getAttribute('data-label')} = Rank ${inp.value}`);
-    });
-    if (parts.length) responses[label] = parts.join(' | ');
-  });
 
   try {
     fetch(SHEET_URL, {

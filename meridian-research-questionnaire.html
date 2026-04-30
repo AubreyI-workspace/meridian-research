@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian AI · Executive AI Readiness</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a0f1e;
+    --navy-mid: #0f1628;
+    --navy-light: #161e35;
+    --gold: #c9a84c;
+    --gold-pale: rgba(201,168,76,0.12);
+    --gold-pale2: rgba(201,168,76,0.06);
+    --text: #e8e4dc;
+    --text-muted: #8a8fa8;
+    --text-dim: #5a6080;
+    --border: rgba(201,168,76,0.18);
+    --border-dim: rgba(201,168,76,0.08);
+    --green: #3db89a; --purple: #8e72e8;
+    --orange: #e87a4a; --blue: #4a9ee8;
+    --pink: #e84a8a; --lime: #5ac65a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--navy); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; overflow-x: hidden; }
+
+  /* ── Starfield ── */
+  #bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .star { position: absolute; border-radius: 50%; background: #fff; opacity: 0; animation: twinkle var(--dur,3s) var(--delay,0s) infinite ease-in-out; }
+  @keyframes twinkle { 0%,100%{opacity:var(--base-opacity,.1)} 50%{opacity:calc(var(--base-opacity,.1)*3.5)} }
+
+  .page { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 80px 40px 120px; }
+
+  /* ── Header ── */
+  header { text-align: center; margin-bottom: 64px; animation: fadeUp .8s ease both; }
+  .wordmark { font-family:'DM Mono',monospace; font-size:.6rem; letter-spacing:.35em; text-transform:uppercase; color:var(--gold); margin-bottom:32px; opacity:.85; }
+  header h1 { font-family:'Playfair Display',serif; font-size:clamp(2rem,5vw,3rem); font-weight:400; line-height:1.2; color:var(--text); margin-bottom:8px; }
+  header h1 em { font-style:italic; color:var(--gold); }
+  .header-rule { width:60px; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:24px auto; }
+  .header-sub { font-size:.88rem; color:var(--text-muted); line-height:1.7; max-width:520px; margin:0 auto 32px; }
+  .header-meta { display:flex; justify-content:center; gap:32px; flex-wrap:wrap; }
+  .meta-item { font-family:'DM Mono',monospace; font-size:.58rem; letter-spacing:.25em; text-transform:uppercase; color:var(--text-dim); display:flex; align-items:center; gap:8px; }
+  .meta-dot { width:4px; height:4px; border-radius:50%; background:var(--gold); opacity:.6; }
+
+  /* ── Intent bar ── */
+  .intent-bar { background:var(--navy-light); border:1px solid var(--border-dim); border-radius:2px; padding:18px 24px; margin-bottom:32px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .intent-label { font-family:'DM Mono',monospace; font-size:.55rem; letter-spacing:.25em; text-transform:uppercase; color:var(--text-dim); white-space:nowrap; }
+  .intent-tag { padding:3px 10px; border-radius:2px; font-family:'DM Mono',monospace; font-size:.56rem; letter-spacing:.15em; text-transform:uppercase; border:1px solid; }
+  .it-pain   { color:#e87a4a; border-color:rgba(232,122,74,.3); background:rgba(232,122,74,.06); }
+  .it-fear   { color:#e84a8a; border-color:rgba(232,74,138,.3); background:rgba(232,74,138,.06); }
+  .it-value  { color:#3db89a; border-color:rgba(61,184,154,.3); background:rgba(61,184,154,.06); }
+  .it-benefit{ color:#5ac65a; border-color:rgba(90,198,90,.3);  background:rgba(90,198,90,.06); }
+  .it-concern{ color:#8e72e8; border-color:rgba(142,114,232,.3);background:rgba(142,114,232,.06); }
+  .it-context{ color:#4a9ee8; border-color:rgba(74,158,232,.3); background:rgba(74,158,232,.06); }
+
+  /* ── Intro box ── */
+  .intro-box { background:var(--navy-light); border:1px solid var(--border); border-radius:2px; padding:28px 32px; margin-bottom:48px; position:relative; overflow:hidden; animation:fadeUp .8s .1s ease both; }
+  .intro-box::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+  .intro-label { font-family:'DM Mono',monospace; font-size:.55rem; letter-spacing:.3em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
+  .intro-box p { font-size:.88rem; color:var(--text-muted); line-height:1.75; }
+  .intro-box strong { color:var(--text); font-weight:500; }
+  .time-badge { display:inline-flex; align-items:center; gap:6px; background:var(--gold-pale); border:1px solid var(--border); border-radius:2px; padding:4px 12px; font-family:'DM Mono',monospace; font-size:.6rem; letter-spacing:.2em; color:var(--gold); margin-top:16px; }
+
+  /* ── Section ── */
+  .section { margin-bottom:56px; }
+  .section-header { display:flex; align-items:flex-start; gap:20px; margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid var(--border-dim); }
+  .section-num-wrap { flex-shrink:0; width:44px; height:44px; border:1px solid currentColor; border-radius:2px; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:600; }
+  .section-meta { flex:1; }
+  .section-tag { font-family:'DM Mono',monospace; font-size:.54rem; letter-spacing:.3em; text-transform:uppercase; margin-bottom:4px; }
+  .section-title { font-family:'Playfair Display',serif; font-size:1.25rem; font-weight:400; color:var(--text); }
+  .section-desc { font-size:.8rem; color:var(--text-dim); line-height:1.6; margin-top:4px; }
+  .s1 .section-num-wrap,.s1 .section-tag{color:var(--green)} .s1 .section-num-wrap{border-color:var(--green)}
+  .s2 .section-num-wrap,.s2 .section-tag{color:var(--purple)} .s2 .section-num-wrap{border-color:var(--purple)}
+  .s3 .section-num-wrap,.s3 .section-tag{color:var(--orange)} .s3 .section-num-wrap{border-color:var(--orange)}
+  .s4 .section-num-wrap,.s4 .section-tag{color:var(--blue)}   .s4 .section-num-wrap{border-color:var(--blue)}
+  .s5 .section-num-wrap,.s5 .section-tag{color:var(--pink)}   .s5 .section-num-wrap{border-color:var(--pink)}
+  .s6 .section-num-wrap,.s6 .section-tag{color:var(--lime)}   .s6 .section-num-wrap{border-color:var(--lime)}
+
+  /* ── Questions ── */
+  .questions { display:flex; flex-direction:column; gap:20px; }
+  .q-block { background:var(--navy-mid); border:1px solid var(--border-dim); border-radius:2px; padding:24px 28px; transition:border-color .2s; }
+  .q-block:hover { border-color:var(--border); }
+  .q-type { display:inline-flex; background:var(--gold-pale2); border:1px solid var(--border-dim); border-radius:2px; padding:3px 10px; font-family:'DM Mono',monospace; font-size:.52rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-dim); margin-bottom:10px; }
+  .q-number { font-family:'DM Mono',monospace; font-size:.55rem; letter-spacing:.3em; color:var(--text-dim); margin-bottom:10px; text-transform:uppercase; }
+  .q-text { font-size:.95rem; line-height:1.65; color:var(--text); font-weight:400; margin-bottom:14px; }
+
+  /* ── Selectable options ── */
+  .q-options { display:flex; flex-direction:column; gap:8px; }
+  .q-option { display:flex; align-items:center; gap:12px; padding:10px 14px; background:var(--gold-pale2); border:1px solid var(--border-dim); border-radius:2px; font-size:.84rem; color:var(--text-muted); cursor:pointer; transition:all .15s; user-select:none; }
+  .q-option:hover { border-color:var(--border); color:var(--text); background:rgba(201,168,76,.09); }
+  .q-option.selected { border-color:var(--gold); background:var(--gold-pale); color:var(--text); }
+  .q-option.selected .opt-indicator { background:var(--gold); border-color:var(--gold); }
+  .q-option.selected .opt-indicator::after { opacity:1; }
+  .opt-indicator { flex-shrink:0; width:16px; height:16px; border:1px solid var(--border); border-radius:50%; position:relative; transition:all .15s; }
+  .opt-indicator::after { content:''; position:absolute; inset:3px; border-radius:50%; background:var(--navy); opacity:0; transition:opacity .15s; }
+  .q-option.multi .opt-indicator { border-radius:2px; }
+  .q-option.multi.selected .opt-indicator::after { content:'✓'; inset:0; display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--navy); background:none; opacity:1; }
+  .other-input { background:transparent; border:none; border-bottom:1px solid var(--border); color:var(--text); font-family:'DM Sans',sans-serif; font-size:.84rem; padding:2px 4px; outline:none; width:200px; margin-left:4px; }
+  .other-input::placeholder { color:var(--text-dim); }
+
+  /* ── Scale ── */
+  .scale-row { display:flex; gap:6px; margin-top:4px; flex-wrap:wrap; }
+  .scale-item { flex:1; min-width:36px; background:var(--gold-pale2); border:1px solid var(--border-dim); border-radius:2px; padding:10px 4px; text-align:center; font-family:'DM Mono',monospace; font-size:.75rem; color:var(--text-dim); cursor:pointer; transition:all .15s; user-select:none; }
+  .scale-item:hover { border-color:var(--border); color:var(--text); }
+  .scale-item.selected { background:var(--gold-pale); border-color:var(--gold); color:var(--gold); font-weight:500; }
+  .scale-labels { display:flex; justify-content:space-between; margin-top:6px; font-size:.7rem; color:var(--text-dim); font-style:italic; }
+
+  /* ── Ranking ── */
+  .rank-options .q-option { cursor:default; }
+  .rank-options .q-option:hover { border-color:var(--border-dim); background:var(--gold-pale2); color:var(--text-muted); }
+  .rank-input { width:38px; flex-shrink:0; background:var(--navy); border:1px solid var(--border); border-radius:2px; color:var(--gold); font-family:'DM Mono',monospace; font-size:.8rem; text-align:center; padding:5px 4px; outline:none; -moz-appearance:textfield; }
+  .rank-input::-webkit-outer-spin-button,.rank-input::-webkit-inner-spin-button{-webkit-appearance:none}
+  .rank-input::placeholder{color:var(--text-dim)} .rank-input:focus{border-color:var(--gold)}
+
+  /* ── Textarea ── */
+  .q-textarea { width:100%; min-height:100px; background:var(--navy); border:1px solid var(--border-dim); border-radius:2px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.88rem; font-weight:300; line-height:1.65; padding:14px 16px; outline:none; resize:vertical; transition:border-color .2s; }
+  .q-textarea::placeholder{color:var(--text-dim)} .q-textarea:focus{border-color:var(--gold)}
+
+  .section-divider { height:1px; background:linear-gradient(90deg,transparent,var(--border),transparent); margin:48px 0; }
+
+  /* ── Submit ── */
+  .submit-zone { text-align:center; padding:48px 0 0; }
+  .submit-btn { display:inline-flex; align-items:center; gap:12px; background:var(--gold); color:var(--navy); font-family:'DM Mono',monospace; font-size:.72rem; letter-spacing:.25em; text-transform:uppercase; padding:16px 40px; border:none; border-radius:2px; cursor:pointer; transition:all .2s; font-weight:500; }
+  .submit-btn:hover { background:#dbb95a; transform:translateY(-1px); box-shadow:0 8px 24px rgba(201,168,76,.25); }
+  .submit-btn:active { transform:translateY(0); }
+  .submit-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+  .submit-note { font-size:.76rem; color:var(--text-dim); margin-top:16px; font-style:italic; }
+
+  /* ── Thank you screen ── */
+  #thankyou { display:none; }
+  .ty-card { background:var(--navy-light); border:1px solid var(--border); border-radius:2px; padding:56px 48px; text-align:center; position:relative; overflow:hidden; margin-top:64px; }
+  .ty-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+  .ty-icon { width:56px; height:56px; border:1px solid var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 28px; }
+  .ty-label { font-family:'DM Mono',monospace; font-size:.58rem; letter-spacing:.3em; text-transform:uppercase; color:var(--gold); margin-bottom:16px; }
+  .ty-title { font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:400; color:var(--text); margin-bottom:16px; line-height:1.3; }
+  .ty-title em { font-style:italic; color:var(--gold); }
+  .ty-body { font-size:.9rem; color:var(--text-muted); line-height:1.75; max-width:480px; margin:0 auto 32px; }
+  .ty-rule { width:40px; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:32px auto; }
+  .ty-detail { font-family:'DM Mono',monospace; font-size:.62rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-dim); }
+  .ty-timestamp { font-family:'DM Mono',monospace; font-size:.62rem; color:var(--text-dim); margin-top:8px; }
+
+  /* ── Respondent info block ── */
+  .respondent-block { background:var(--navy-light); border:1px solid var(--border); border-radius:2px; padding:28px 32px; margin-bottom:40px; position:relative; overflow:hidden; }
+  .respondent-block::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+  .respondent-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+  .respondent-grid .field-full { grid-column:1/-1; }
+  .field-label { font-family:'DM Mono',monospace; font-size:.54rem; letter-spacing:.25em; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px; }
+  .field-input { width:100%; background:var(--navy); border:1px solid var(--border-dim); border-radius:2px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.9rem; font-weight:300; padding:11px 14px; outline:none; transition:border-color .2s; }
+  .field-input::placeholder { color:var(--text-dim); }
+  .field-input:focus { border-color:var(--gold); }
+  @media(max-width:600px) { .respondent-grid { grid-template-columns:1fr; } }
+
+  /* ── Free-text addon beneath multi-select ── */
+  .q-freetext { margin-top:10px; }
+  .q-freetext-label { font-family:'DM Mono',monospace; font-size:.52rem; letter-spacing:.22em; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px; }
+  .q-freetext-input { width:100%; background:var(--navy); border:1px solid var(--border-dim); border-radius:2px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.86rem; font-weight:300; padding:11px 14px; outline:none; resize:vertical; min-height:72px; transition:border-color .2s; }
+  .q-freetext-input::placeholder { color:var(--text-dim); }
+  .q-freetext-input:focus { border-color:var(--gold); }
+
+  /* ── Config banner (shown if URL not set) ── */
+  #config-banner { background:rgba(232,122,74,.08); border:1px solid rgba(232,122,74,.25); border-radius:2px; padding:16px 20px; margin-bottom:32px; display:none; }
+  #config-banner p { font-size:.82rem; color:#e87a4a; line-height:1.6; }
+  #config-banner code { font-family:'DM Mono',monospace; font-size:.78rem; background:rgba(232,122,74,.1); padding:2px 6px; border-radius:2px; }
+
+  /* ── Error state ── */
+  .submit-error { margin-top:20px; padding:16px 20px; background:rgba(232,74,138,.06); border:1px solid rgba(232,74,138,.2); border-radius:2px; font-size:.82rem; color:#e84a8a; display:none; }
+
+  footer { margin-top:80px; padding-top:24px; border-top:1px solid var(--border-dim); display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; font-family:'DM Mono',monospace; font-size:.56rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-dim); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  @media(max-width:600px) {
+    .page{padding:48px 20px 80px}
+    .header-meta{gap:16px}
+    .q-block{padding:18px 20px}
+    .ty-card{padding:40px 24px}
+  }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div class="page">
+
+  <!-- Config banner — shown if SHEET_URL not set -->
+  <div id="config-banner">
+    <p>⚠ <strong>Setup required:</strong> Replace the <code>SHEET_URL</code> value near the bottom of this file with your Google Apps Script deployment URL. See the setup instructions in the file comments.</p>
+  </div>
+
+  <!-- ══════════ FORM VIEW ══════════ -->
+  <div id="form-view">
+
+    <header>
+      <div class="wordmark">Meridian AI · Market Research · 2026</div>
+      <h1>Executive AI Readiness<br><em>Research Questionnaire</em></h1>
+      <div class="header-rule"></div>
+      <p class="header-sub">A brief research study on how executives experience their workload, their relationship with AI, and what they'd need from an AI implementation to consider it worth their time.</p>
+      <div class="header-meta">
+        <div class="meta-item"><div class="meta-dot"></div>6 Sections</div>
+        <div class="meta-item"><div class="meta-dot"></div>34 Questions</div>
+        <div class="meta-item"><div class="meta-dot"></div>Mixed Format</div>
+        <div class="meta-item"><div class="meta-dot"></div>~10–12 Min</div>
+      </div>
+    </header>
+
+    <div class="intent-bar">
+      <span class="intent-label">Designed to uncover →</span>
+      <span class="intent-tag it-pain">Pain Points</span>
+      <span class="intent-tag it-fear">Fears & Resistance</span>
+      <span class="intent-tag it-value">Core Values</span>
+      <span class="intent-tag it-benefit">Desired Benefits</span>
+      <span class="intent-tag it-concern">Key Concerns</span>
+      <span class="intent-tag it-context">Role Context</span>
+    </div>
+
+    <div class="intro-box">
+      <div class="intro-label">Instructions for Participants</div>
+      <p>This is a brief research study about how executives experience their workload, their relationship with AI tools, and what they'd need to see from an AI implementation service to consider it worth their time. <strong>There are no right or wrong answers.</strong> We're interested in your honest experience — including frustration, skepticism, or confusion. Your responses remain confidential and will never be shared individually.</p>
+      <div class="time-badge">
+        <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor"/><path d="M6 3v3l2 2" stroke="currentColor" stroke-linecap="round"/></svg>
+        Estimated time: 10–12 minutes
+      </div>
+    </div>
+
+    <!-- Respondent info -->
+    <div class="respondent-block">
+      <div class="intro-label">About You</div>
+      <div class="respondent-grid">
+        <div class="field-full">
+          <div class="field-label">Full Name</div>
+          <input class="field-input" id="resp-name" type="text" placeholder="Your full name" autocomplete="name">
+        </div>
+        <div>
+          <div class="field-label">Job Title</div>
+          <input class="field-input" id="resp-title" type="text" placeholder="e.g. Managing Partner" autocomplete="organization-title">
+        </div>
+        <div>
+          <div class="field-label">Company</div>
+          <input class="field-input" id="resp-company" type="text" placeholder="e.g. Acme Law Group" autocomplete="organization">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- ═══ S1 ═══ -->
+    <div class="section s1">
+      <div class="section-header">
+        <div class="section-num-wrap">01</div>
+        <div class="section-meta">
+          <div class="section-tag">Role Context · Baseline</div>
+          <div class="section-title">Who You Are & How You Work</div>
+          <div class="section-desc">Establishes your role, responsibilities, and current relationship with your time and output.</div>
+        </div>
+      </div>
+      <div class="questions">
+
+        <div class="q-block">
+          <div class="q-type">Single Choice</div>
+          <div class="q-number">Q 01.01</div>
+          <div class="q-text">Which best describes your current role?</div>
+          <div class="q-options" data-qid="01.01" data-type="single">
+            <div class="q-option" data-val="C-Suite executive (CEO, COO, CMO, CFO, CTO) at a company of 150–800 employees"><div class="opt-indicator"></div>C-Suite executive (CEO, COO, CMO, CFO, CTO) at a company of 150–800 employees</div>
+            <div class="q-option" data-val="Managing Partner or senior partner at a professional services firm"><div class="opt-indicator"></div>Managing Partner or senior partner at a professional services firm</div>
+            <div class="q-option" data-val="VP, SVP, or Division Head at an enterprise organization"><div class="opt-indicator"></div>VP, SVP, or Division Head at an enterprise organization</div>
+            <div class="q-option" data-val="Founder or CEO of an early-stage company ($1M–$15M ARR)"><div class="opt-indicator"></div>Founder or CEO of an early-stage company ($1M–$15M ARR)</div>
+            <div class="q-option" data-val="other-role"><div class="opt-indicator"></div>Other senior leadership — <input class="other-input" placeholder="please specify" onclick="event.stopPropagation()"></div>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Single Choice</div>
+          <div class="q-number">Q 01.02</div>
+          <div class="q-text">How many direct reports or team members do you actively manage?</div>
+          <div class="q-options" data-qid="01.02" data-type="single">
+            <div class="q-option" data-val="0–4 (small team or solo)"><div class="opt-indicator"></div>0–4 (small team or solo)</div>
+            <div class="q-option" data-val="5–15"><div class="opt-indicator"></div>5–15</div>
+            <div class="q-option" data-val="16–50"><div class="opt-indicator"></div>16–50</div>
+            <div class="q-option" data-val="50+ direct or matrixed"><div class="opt-indicator"></div>50+ direct or matrixed</div>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 01.03</div>
+          <div class="q-text">Walk me through what a typical Tuesday looks like for you — from when you start work to when you stop. What consumes the most time that you didn't expect?</div>
+          <textarea class="q-textarea" data-qid="01.03" placeholder="Share as much detail as you'd like…"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Scale 1–10</div>
+          <div class="q-number">Q 01.04</div>
+          <div class="q-text">How much of your week is spent on work you consider genuinely strategic — thinking, deciding, building — versus operational or reactive?</div>
+          <div class="scale-row" data-qid="01.04">
+            <div class="scale-item" data-val="1">1</div><div class="scale-item" data-val="2">2</div><div class="scale-item" data-val="3">3</div><div class="scale-item" data-val="4">4</div><div class="scale-item" data-val="5">5</div><div class="scale-item" data-val="6">6</div><div class="scale-item" data-val="7">7</div><div class="scale-item" data-val="8">8</div><div class="scale-item" data-val="9">9</div><div class="scale-item" data-val="10">10</div>
+          </div>
+          <div class="scale-labels"><span>Almost entirely reactive</span><span>Almost entirely strategic</span></div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 01.05</div>
+          <div class="q-text">If you could eliminate two types of tasks from your week entirely — tasks that shouldn't require your level of judgment — what would they be?</div>
+          <textarea class="q-textarea" data-qid="01.05" placeholder="Describe the tasks…"></textarea>
+        </div>
+
+      </div>
+    </div>
+    <div class="section-divider"></div>
+
+    <!-- ═══ S2 ═══ -->
+    <div class="section s2">
+      <div class="section-header">
+        <div class="section-num-wrap">02</div>
+        <div class="section-meta">
+          <div class="section-tag">Pain Points · Primary Research</div>
+          <div class="section-title">The Real Weight of the Work</div>
+          <div class="section-desc">Surfaces the specific friction, inefficiency, and frustration that erodes your capacity and energy.</div>
+        </div>
+      </div>
+      <div class="questions">
+
+        <div class="q-block">
+          <div class="q-type">Ranking</div>
+          <div class="q-number">Q 02.01</div>
+          <div class="q-text">Rank the following pain points from most to least disruptive to your effectiveness (1 = most disruptive):</div>
+          <div class="q-options rank-options" data-qid="02.01" data-type="rank">
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="6" placeholder="#" data-label="Keeping up with email, Slack, and async communications"><span>Keeping up with email, Slack, and async communications</span></div>
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="6" placeholder="#" data-label="Preparing for meetings — briefs, agendas, pre-reads"><span>Preparing for meetings — briefs, agendas, pre-reads</span></div>
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="6" placeholder="#" data-label="Drafting documents, reports, memos, or proposals"><span>Drafting documents, reports, memos, or proposals</span></div>
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="6" placeholder="#" data-label="Staying current on market or industry developments"><span>Staying current on market or industry developments</span></div>
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="6" placeholder="#" data-label="Following up, tracking decisions, and managing accountability"><span>Following up, tracking decisions, and managing accountability</span></div>
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="6" placeholder="#" data-label="Synthesizing information for decisions under time pressure"><span>Synthesizing information for decisions under time pressure</span></div>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 02.02</div>
+          <div class="q-text">Think about the last time you felt genuinely overwhelmed at work. What was actually happening, and what made it feel unmanageable?</div>
+          <textarea class="q-textarea" data-qid="02.02" placeholder="Describe the situation…"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 02.03</div>
+          <div class="q-text">What work do you do today that you know — intellectually — shouldn't require someone at your level to do it, but there's no one else to hand it to?</div>
+          <textarea class="q-textarea" data-qid="02.03" placeholder="Describe the work…"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Select All That Apply</div>
+          <div class="q-number">Q 02.04</div>
+          <div class="q-text">Where does time go in your week that you wish it didn't? Select all that apply.</div>
+          <div class="q-options" data-qid="02.04" data-type="multi">
+            <div class="q-option multi" data-val="Meetings that didn't need to happen"><div class="opt-indicator"></div>Meetings that didn't need to happen</div>
+            <div class="q-option multi" data-val="Reworking or editing other people's output"><div class="opt-indicator"></div>Reworking or editing other people's output</div>
+            <div class="q-option multi" data-val="Writing or formatting documents I should be reviewing"><div class="opt-indicator"></div>Writing or formatting documents I should be reviewing</div>
+            <div class="q-option multi" data-val="Answering questions my team should be able to answer"><div class="opt-indicator"></div>Answering questions my team should be able to answer</div>
+            <div class="q-option multi" data-val="Searching for information that should be findable"><div class="opt-indicator"></div>Searching for information that should be findable</div>
+            <div class="q-option multi" data-val="Chasing people for updates and follow-through"><div class="opt-indicator"></div>Chasing people for updates and follow-through</div>
+            <div class="q-option multi" data-val="Context-switching between unrelated priorities"><div class="opt-indicator"></div>Context-switching between unrelated priorities</div>
+          </div>
+          <div class="q-freetext">
+            <div class="q-freetext-label">Anything else? Add it here</div>
+            <textarea class="q-freetext-input" data-qid="02.04-other" placeholder="Any other time drains not listed above…"></textarea>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 02.05</div>
+          <div class="q-text">What part of your job do you find genuinely energizing — and how often in a given week does that work actually happen?</div>
+          <textarea class="q-textarea" data-qid="02.05" placeholder="Describe what energizes you…"></textarea>
+        </div>
+
+      </div>
+    </div>
+    <div class="section-divider"></div>
+
+    <!-- ═══ S3 ═══ -->
+    <div class="section s3">
+      <div class="section-header">
+        <div class="section-num-wrap">03</div>
+        <div class="section-meta">
+          <div class="section-tag">AI Relationship · Current State</div>
+          <div class="section-title">Your Experience with AI So Far</div>
+          <div class="section-desc">Maps where you currently stand — from skeptic to early adopter — and why existing attempts may not have delivered.</div>
+        </div>
+      </div>
+      <div class="questions">
+
+        <div class="q-block">
+          <div class="q-type">Single Choice</div>
+          <div class="q-number">Q 03.01</div>
+          <div class="q-text">How would you describe your current relationship with AI tools?</div>
+          <div class="q-options" data-qid="03.01" data-type="single">
+            <div class="q-option" data-val="I haven't used AI tools in a meaningful work context"><div class="opt-indicator"></div>I haven't used AI tools in a meaningful work context</div>
+            <div class="q-option" data-val="I've experimented but nothing stuck or produced results worth repeating"><div class="opt-indicator"></div>I've experimented but nothing stuck or produced results worth repeating</div>
+            <div class="q-option" data-val="I use AI occasionally for specific tasks (writing, search, summarizing)"><div class="opt-indicator"></div>I use AI occasionally for specific tasks (writing, search, summarizing)</div>
+            <div class="q-option" data-val="I use AI regularly, but it feels more like a search engine than a real assistant"><div class="opt-indicator"></div>I use AI regularly, but it feels more like a search engine than a real assistant</div>
+            <div class="q-option" data-val="AI is genuinely embedded in my workflow and I depend on it"><div class="opt-indicator"></div>AI is genuinely embedded in my workflow and I depend on it</div>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 03.02</div>
+          <div class="q-text">If you've tried AI tools before — what did you try, what did you hope it would do, and what actually happened?</div>
+          <textarea class="q-textarea" data-qid="03.02" placeholder="Describe your experience…"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Scale 1–10</div>
+          <div class="q-number">Q 03.03</div>
+          <div class="q-text">How confident are you that AI — seamlessly integrated into your personal workflow — could meaningfully change how much you accomplish in a week?</div>
+          <div class="scale-row" data-qid="03.03">
+            <div class="scale-item" data-val="1">1</div><div class="scale-item" data-val="2">2</div><div class="scale-item" data-val="3">3</div><div class="scale-item" data-val="4">4</div><div class="scale-item" data-val="5">5</div><div class="scale-item" data-val="6">6</div><div class="scale-item" data-val="7">7</div><div class="scale-item" data-val="8">8</div><div class="scale-item" data-val="9">9</div><div class="scale-item" data-val="10">10</div>
+          </div>
+          <div class="scale-labels"><span>Not at all confident</span><span>Completely confident</span></div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 03.04</div>
+          <div class="q-text">What would AI need to actually do — specifically — for you to consider it genuinely useful in your daily workflow? What's the bar it hasn't cleared yet?</div>
+          <textarea class="q-textarea" data-qid="03.04" placeholder="Describe the bar…"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 03.05</div>
+          <div class="q-text">Have you heard of a colleague or peer using AI in a way that made you think, "I want that"? What were they doing?</div>
+          <textarea class="q-textarea" data-qid="03.05" placeholder="Describe what you observed…"></textarea>
+        </div>
+
+      </div>
+    </div>
+    <div class="section-divider"></div>
+
+    <!-- ═══ S4 ═══ -->
+    <div class="section s4">
+      <div class="section-header">
+        <div class="section-num-wrap">04</div>
+        <div class="section-meta">
+          <div class="section-tag">Fears & Resistance · Critical Data</div>
+          <div class="section-title">What's Holding You Back</div>
+          <div class="section-desc">Maps the real objections, risks, and fears that prevent adoption.</div>
+        </div>
+      </div>
+      <div class="questions">
+
+        <div class="q-block">
+          <div class="q-type">Select All That Apply</div>
+          <div class="q-number">Q 04.01</div>
+          <div class="q-text">What concerns do you have about implementing AI more deeply into your work? Select all that apply.</div>
+          <div class="q-options" data-qid="04.01" data-type="multi">
+            <div class="q-option multi" data-val="I don't have the time to learn a new system or set it up properly"><div class="opt-indicator"></div>I don't have the time to learn a new system or set it up properly</div>
+            <div class="q-option multi" data-val="I'm not sure it'll actually work for my specific type of work"><div class="opt-indicator"></div>I'm not sure it'll actually work for my specific type of work</div>
+            <div class="q-option multi" data-val="I'm worried about accuracy — AI errors in my context have real consequences"><div class="opt-indicator"></div>I'm worried about accuracy — AI errors in my context have real consequences</div>
+            <div class="q-option multi" data-val="I'm not sure how to evaluate whether something is worth the cost"><div class="opt-indicator"></div>I'm not sure how to evaluate whether something is worth the cost</div>
+            <div class="q-option multi" data-val="I'm concerned about confidentiality and data security"><div class="opt-indicator"></div>I'm concerned about confidentiality and data security</div>
+            <div class="q-option multi" data-val="I worry it'll become one more thing I have to manage"><div class="opt-indicator"></div>I worry it'll become one more thing I have to manage</div>
+            <div class="q-option multi" data-val="I'm concerned about how it appears to clients or my board"><div class="opt-indicator"></div>I'm concerned about how it appears to clients or my board</div>
+            <div class="q-option multi" data-val="I'm skeptical it can match the judgment and nuance my role requires"><div class="opt-indicator"></div>I'm skeptical it can match the judgment and nuance my role requires</div>
+          </div>
+          <div class="q-freetext">
+            <div class="q-freetext-label">Any other concerns not listed above?</div>
+            <textarea class="q-freetext-input" data-qid="04.01-other" placeholder="Describe any additional concerns…"></textarea>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 04.02</div>
+          <div class="q-text">What's your single biggest fear about becoming more dependent on AI in your professional life?</div>
+          <textarea class="q-textarea" data-qid="04.02" placeholder="Be as candid as you'd like…"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 04.03</div>
+          <div class="q-text">If you imagined hiring an AI implementation service — what's the first thing that would make you walk away from it?</div>
+          <textarea class="q-textarea" data-qid="04.03" placeholder="Describe your dealbreaker…"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Scale 1–10</div>
+          <div class="q-number">Q 04.04</div>
+          <div class="q-text">How much do you trust AI-generated output in your current professional context — without a human review layer?</div>
+          <div class="scale-row" data-qid="04.04">
+            <div class="scale-item" data-val="1">1</div><div class="scale-item" data-val="2">2</div><div class="scale-item" data-val="3">3</div><div class="scale-item" data-val="4">4</div><div class="scale-item" data-val="5">5</div><div class="scale-item" data-val="6">6</div><div class="scale-item" data-val="7">7</div><div class="scale-item" data-val="8">8</div><div class="scale-item" data-val="9">9</div><div class="scale-item" data-val="10">10</div>
+          </div>
+          <div class="scale-labels"><span>No trust without review</span><span>High trust, would use directly</span></div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 04.05</div>
+          <div class="q-text">Has your organization, firm, or board said anything — formally or informally — about AI usage? How has that shaped your own approach?</div>
+          <textarea class="q-textarea" data-qid="04.05" placeholder="Describe the context…"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 04.06</div>
+          <div class="q-text">What would you need to see — or what would need to be true — for you to feel comfortable handing a significant piece of your work to an AI system?</div>
+          <textarea class="q-textarea" data-qid="04.06" placeholder="Describe what would make you trust it…"></textarea>
+        </div>
+
+      </div>
+    </div>
+    <div class="section-divider"></div>
+
+    <!-- ═══ S5 ═══ -->
+    <div class="section s5">
+      <div class="section-header">
+        <div class="section-num-wrap">05</div>
+        <div class="section-meta">
+          <div class="section-tag">Values & Benefits · Outcome Mapping</div>
+          <div class="section-title">What You Actually Want</div>
+          <div class="section-desc">Surfaces the outcomes, benefits, and values that would make an AI implementation feel worth it — in your own words.</div>
+        </div>
+      </div>
+      <div class="questions">
+
+        <div class="q-block">
+          <div class="q-type">Ranking — Top 3</div>
+          <div class="q-number">Q 05.01</div>
+          <div class="q-text">If an AI implementation service delivered on all of these, which would matter most to you? Rank your top 3 (1 = most important).</div>
+          <div class="q-options rank-options" data-qid="05.01" data-type="rank">
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="7" placeholder="#" data-label="Reclaiming 10+ hours per week of my time"><span>Reclaiming 10+ hours per week of my time</span></div>
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="7" placeholder="#" data-label="Thinking more clearly without the cognitive weight of small tasks"><span>Thinking more clearly without the cognitive weight of small tasks</span></div>
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="7" placeholder="#" data-label="Delivering higher-quality work product faster"><span>Delivering higher-quality work product faster</span></div>
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="7" placeholder="#" data-label="Feeling ahead of my week instead of behind it"><span>Feeling ahead of my week instead of behind it</span></div>
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="7" placeholder="#" data-label="Making faster, more confident decisions"><span>Making faster, more confident decisions</span></div>
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="7" placeholder="#" data-label="Having a competitive advantage over peers who don't have this"><span>Having a competitive advantage over peers who don't have this</span></div>
+            <div class="q-option"><input type="number" class="rank-input" min="1" max="7" placeholder="#" data-label="Reducing the stress of managing everything simultaneously"><span>Reducing the stress of managing everything simultaneously</span></div>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 05.02</div>
+          <div class="q-text">If an AI system was working perfectly for you six months from now, what would be different about your day? What would you be doing that you can't do now?</div>
+          <textarea class="q-textarea" data-qid="05.02" placeholder="Describe your ideal future state…"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Scale 1–10</div>
+          <div class="q-number">Q 05.03</div>
+          <div class="q-text">How much do you value a solution that's built for how <em>you specifically</em> work — versus a general tool you configure yourself?</div>
+          <div class="scale-row" data-qid="05.03">
+            <div class="scale-item" data-val="1">1</div><div class="scale-item" data-val="2">2</div><div class="scale-item" data-val="3">3</div><div class="scale-item" data-val="4">4</div><div class="scale-item" data-val="5">5</div><div class="scale-item" data-val="6">6</div><div class="scale-item" data-val="7">7</div><div class="scale-item" data-val="8">8</div><div class="scale-item" data-val="9">9</div><div class="scale-item" data-val="10">10</div>
+          </div>
+          <div class="scale-labels"><span>General tool, I'll configure it</span><span>Must be built specifically for me</span></div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 05.04</div>
+          <div class="q-text">If something was working so well that you'd tell a close colleague about it — what would you actually say to them? How would you describe it?</div>
+          <textarea class="q-textarea" data-qid="05.04" placeholder="How would you describe it to a peer?"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Single Choice</div>
+          <div class="q-number">Q 05.05</div>
+          <div class="q-text">How do you think about the ROI of something that saves you significant time? Which frame fits best?</div>
+          <div class="q-options" data-qid="05.05" data-type="single">
+            <div class="q-option" data-val="Time is money — I put a dollar value on every hour"><div class="opt-indicator"></div>Time is money — I put a dollar value on every hour</div>
+            <div class="q-option" data-val="I care more about mental bandwidth than raw hours"><div class="opt-indicator"></div>I care more about mental bandwidth than raw hours</div>
+            <div class="q-option" data-val="I want measurable output quality to improve, not just speed"><div class="opt-indicator"></div>I want measurable output quality to improve, not just speed</div>
+            <div class="q-option" data-val="I care about competitive positioning — being ahead of my peers"><div class="opt-indicator"></div>I care about competitive positioning — being ahead of my peers</div>
+            <div class="q-option" data-val="I'm not sure — I haven't evaluated it this way before"><div class="opt-indicator"></div>I'm not sure — I haven't evaluated it this way before</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="section-divider"></div>
+
+    <!-- ═══ S6 ═══ -->
+    <div class="section s6">
+      <div class="section-header">
+        <div class="section-num-wrap">06</div>
+        <div class="section-meta">
+          <div class="section-tag">Buying Signals · Decision Intelligence</div>
+          <div class="section-title">How You'd Actually Decide</div>
+          <div class="section-desc">Surfaces the decision-making criteria, purchase triggers, and social proof signals that would lead you to say yes.</div>
+        </div>
+      </div>
+      <div class="questions">
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 06.01</div>
+          <div class="q-text">If a colleague told you they'd hired someone to build a personalized AI operating system for them — and it had genuinely changed their week — what would you want to know before you'd consider doing the same?</div>
+          <textarea class="q-textarea" data-qid="06.01" placeholder="What questions would you ask?"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Select All That Apply</div>
+          <div class="q-number">Q 06.02</div>
+          <div class="q-text">What would need to be true for you to invest in an executive AI implementation service? Select all that apply.</div>
+          <div class="q-options" data-qid="06.02" data-type="multi">
+            <div class="q-option multi" data-val="I'd need to see a concrete case study of someone in a similar role"><div class="opt-indicator"></div>I'd need to see a concrete case study of someone in a similar role</div>
+            <div class="q-option multi" data-val="I'd need a clear description of what the first 30 days would look like"><div class="opt-indicator"></div>I'd need a clear description of what the first 30 days would look like</div>
+            <div class="q-option multi" data-val="I'd need a guarantee or pilot structure before full commitment"><div class="opt-indicator"></div>I'd need a guarantee or pilot structure before full commitment</div>
+            <div class="q-option multi" data-val="I'd want a referral from someone I trust"><div class="opt-indicator"></div>I'd want a referral from someone I trust</div>
+            <div class="q-option multi" data-val="I'd need to see measurable results promised (hours saved, output improved)"><div class="opt-indicator"></div>I'd need to see measurable results promised (hours saved, output improved)</div>
+            <div class="q-option multi" data-val="I'd want to have a conversation first — no pressure, just to understand what it is"><div class="opt-indicator"></div>I'd want to have a conversation first — no pressure, just to understand what it is</div>
+            <div class="q-option multi" data-val="I'd need the price to be clearly tied to value, not just time"><div class="opt-indicator"></div>I'd need the price to be clearly tied to value, not just time</div>
+          </div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Scale 1–10</div>
+          <div class="q-number">Q 06.03</div>
+          <div class="q-text">How likely are you to make a purchasing decision like this based on a recommendation from someone you know — rather than researching options yourself?</div>
+          <div class="scale-row" data-qid="06.03">
+            <div class="scale-item" data-val="1">1</div><div class="scale-item" data-val="2">2</div><div class="scale-item" data-val="3">3</div><div class="scale-item" data-val="4">4</div><div class="scale-item" data-val="5">5</div><div class="scale-item" data-val="6">6</div><div class="scale-item" data-val="7">7</div><div class="scale-item" data-val="8">8</div><div class="scale-item" data-val="9">9</div><div class="scale-item" data-val="10">10</div>
+          </div>
+          <div class="scale-labels"><span>I research independently</span><span>Referral drives almost everything</span></div>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 06.04</div>
+          <div class="q-text">What price range would make you think "this is too cheap to take seriously" — and what would make you think "this is too expensive for what it probably is"?</div>
+          <textarea class="q-textarea" data-qid="06.04" placeholder="Share your instinctive price anchors…"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Open-Ended</div>
+          <div class="q-number">Q 06.05</div>
+          <div class="q-text">Is there anything you expected me to ask about AI, your work, or executive productivity that I didn't? Anything you'd want to add?</div>
+          <textarea class="q-textarea" data-qid="06.05" placeholder="Any final thoughts…"></textarea>
+        </div>
+
+        <div class="q-block">
+          <div class="q-type">Single Choice</div>
+          <div class="q-number">Q 06.06</div>
+          <div class="q-text">If there were a no-commitment 30-minute session where someone mapped out exactly what an AI operating system would look like specifically for your role — would you want one?</div>
+          <div class="q-options" data-qid="06.06" data-type="single">
+            <div class="q-option" data-val="Yes — I'd want to schedule that now"><div class="opt-indicator"></div>Yes — I'd want to schedule that now</div>
+            <div class="q-option" data-val="Probably yes — once I had a bit more information about what it entails"><div class="opt-indicator"></div>Probably yes — once I had a bit more information about what it entails</div>
+            <div class="q-option" data-val="Maybe — depends on who was running it and what their track record was"><div class="opt-indicator"></div>Maybe — depends on who was running it and what their track record was</div>
+            <div class="q-option" data-val="Not right now — but ask me again in 3–6 months"><div class="opt-indicator"></div>Not right now — but ask me again in 3–6 months</div>
+            <div class="q-option" data-val="No — I'm not in the market for this"><div class="opt-indicator"></div>No — I'm not in the market for this</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Submit -->
+    <div class="submit-zone">
+      <button class="submit-btn" id="submit-btn" onclick="submitForm()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M3 6l5 5 5-5M2 14h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Submit Responses
+      </button>
+      <p class="submit-note">Your responses are confidential and will never be shared individually.</p>
+      <div class="submit-error" id="submit-error">
+        Something went wrong — please try again or reach out directly.
+      </div>
+    </div>
+
+  </div><!-- /#form-view -->
+
+  <!-- ══════════ THANK YOU VIEW ══════════ -->
+  <div id="thankyou">
+    <div class="ty-card">
+      <div class="ty-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="ty-label">Response Received</div>
+      <div class="ty-title">Thank you for your<br><em>time and candor.</em></div>
+      <div class="ty-body">Your answers have been recorded. We review every response personally — not for aggregate data, but to understand the specific context of how people like you think about AI and their work.<br><br>If anything in this questionnaire sparked a question or thought you'd like to continue, we'd welcome the conversation.</div>
+      <div class="ty-rule"></div>
+      <div class="ty-detail">Meridian AI · leadwithmeridian.co</div>
+      <div class="ty-timestamp" id="ty-timestamp"></div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+  <footer>
+    <span>Meridian AI</span>
+    <span>Executive AI Readiness Questionnaire · v1 · April 2026</span>
+    <span>Confidential</span>
+  </footer>
+
+</div><!-- /.page -->
+
+<script>
+/*
+════════════════════════════════════════════════════════
+  SETUP: Replace the value below with your Google Apps
+  Script deployment URL after completing these steps:
+
+  1. Open a new Google Sheet
+  2. Go to Extensions → Apps Script
+  3. Delete any existing code and paste this entire script:
+
+─────────────────────────────────────────────────────
+function doPost(e) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    const data = JSON.parse(e.postData.contents);
+
+    // Write headers on first submission
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(Object.keys(data));
+    }
+    sheet.appendRow(Object.values(data));
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ result: 'success' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ result: 'error', error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+─────────────────────────────────────────────────────
+
+  4. Click Deploy → New Deployment
+  5. Type: Web App
+  6. Execute as: Me
+  7. Who has access: Anyone
+  8. Click Deploy → copy the Web App URL
+  9. Paste it below replacing PASTE_YOUR_URL_HERE
+════════════════════════════════════════════════════
+*/
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwQNgzxiMbSMo1iRJH_l4snsfpu9yEbaBzhPhohgkbgxqIwOlKZGUmd9hzT753-pl53/exec';
+
+// ── Show config banner if URL not set ──
+if (SHEET_URL === 'PASTE_YOUR_URL_HERE') {
+  document.getElementById('config-banner').style.display = 'block';
+}
+
+// ── Starfield ──
+const bg = document.getElementById('bg');
+for (let i = 0; i < 120; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const sz = Math.random() * 1.6 + 0.3;
+  s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${(Math.random()*4+2).toFixed(1)}s;--delay:${(Math.random()*6).toFixed(1)}s;--base-opacity:${(Math.random()*0.3+0.06).toFixed(2)};`;
+  bg.appendChild(s);
+}
+
+// ── Scroll reveal ──
+const sObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; }
+  });
+}, { threshold: 0.05 });
+document.querySelectorAll('.section').forEach((s, i) => {
+  s.style.cssText += `opacity:0;transform:translateY(20px);transition:opacity 0.6s ${i*0.05}s ease,transform 0.6s ${i*0.05}s ease;`;
+  sObs.observe(s);
+});
+
+// ── Single select ──
+document.querySelectorAll('[data-type="single"]').forEach(group => {
+  group.querySelectorAll('.q-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      group.querySelectorAll('.q-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+    });
+  });
+});
+
+// ── Multi select ──
+document.querySelectorAll('[data-type="multi"]').forEach(group => {
+  group.querySelectorAll('.q-option').forEach(opt => {
+    opt.addEventListener('click', () => opt.classList.toggle('selected'));
+  });
+});
+
+// ── Scale ──
+document.querySelectorAll('.scale-row').forEach(row => {
+  row.querySelectorAll('.scale-item').forEach(item => {
+    item.addEventListener('click', () => {
+      row.querySelectorAll('.scale-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+    });
+  });
+});
+
+// ── Question labels for sheet columns ──
+const LABELS = {
+  '01.01':'Role', '01.02':'Team Size', '01.03':'Typical Tuesday',
+  '01.04':'Strategic vs Reactive (1-10)', '01.05':'Tasks to Eliminate',
+  '02.01':'Pain Point Ranking', '02.02':'Overwhelm Experience', '02.03':'Work Below Level',
+  '02.04':'Time Drains', '02.05':'Energizing Work',
+  '03.01':'AI Relationship Status', '03.02':'Prior AI Experience',
+  '03.03':'AI Confidence (1-10)', '03.04':'Bar AI Must Clear', '03.05':'Aspiration AI Use Case',
+  '04.01':'AI Concerns', '04.02':'Biggest Fear', '04.03':'Walk-Away Trigger',
+  '04.04':'Trust in AI Output (1-10)', '04.05':'Org AI Stance', '04.06':'Trust Threshold',
+  '05.01':'Outcome Priority Ranking', '05.02':'Ideal Future State (6mo)',
+  '05.03':'Personalized vs General (1-10)', '05.04':'Word of Mouth Description', '05.05':'ROI Frame',
+  '06.01':'Questions Before Buying', '06.02':'Purchase Conditions',
+  '06.03':'Referral vs Research (1-10)', '06.04':'Price Anchors',
+  '06.05':'Additional Thoughts', '06.06':'Interest in 30-min Session',
+  '02.04-other':'Time Drains (Other)', '04.01-other':'AI Concerns (Other)'
+};
+
+// ── Collect responses ──
+function collectResponses() {
+  const r = {
+    'Submitted At': new Date().toLocaleString('en-US', { dateStyle:'medium', timeStyle:'short' }),
+    'Name': document.getElementById('resp-name').value.trim(),
+    'Job Title': document.getElementById('resp-title').value.trim(),
+    'Company': document.getElementById('resp-company').value.trim()
+  };
+
+  document.querySelectorAll('[data-qid][data-type]').forEach(group => {
+    const qid = group.dataset.qid, type = group.dataset.type;
+    const label = LABELS[qid] || qid;
+    if (type === 'single') {
+      const sel = group.querySelector('.selected');
+      if (sel) r[label] = sel.dataset.val === 'other-role'
+        ? 'Other: ' + (sel.querySelector('.other-input')?.value || '').trim()
+        : sel.dataset.val;
+    } else if (type === 'multi') {
+      const sels = [...group.querySelectorAll('.selected')].map(o => o.dataset.val);
+      if (sels.length) r[label] = sels.join('; ');
+    } else if (type === 'rank') {
+      const parts = [];
+      group.querySelectorAll('.rank-input').forEach(inp => {
+        if (inp.value) parts.push(`${inp.data-label}=${inp.value}`);
+      });
+      if (parts.length) r[label] = parts.join(' | ');
+    }
+  });
+
+  document.querySelectorAll('.scale-row[data-qid]').forEach(row => {
+    const sel = row.querySelector('.selected');
+    const label = LABELS[row.dataset.qid] || row.dataset.qid;
+    if (sel) r[label] = sel.dataset.val;
+  });
+
+  document.querySelectorAll('.q-textarea[data-qid]').forEach(ta => {
+    const label = LABELS[ta.dataset.qid] || ta.dataset.qid;
+    if (ta.value.trim()) r[label] = ta.value.trim();
+  });
+
+  return r;
+}
+
+// ── Submit ──
+async function submitForm() {
+  const btn = document.getElementById('submit-btn');
+  const errEl = document.getElementById('submit-error');
+  errEl.style.display = 'none';
+
+  const responses = collectResponses();
+  if (Object.keys(responses).length < 4) {
+    alert('Please answer at least a few questions before submitting.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<div style="width:14px;height:14px;border:2px solid rgba(10,15,30,.3);border-top-color:#0a0f1e;border-radius:50%;animation:spin .8s linear infinite"></div> Submitting…`;
+
+  // Fix rank collection (data-label attribute)
+  document.querySelectorAll('[data-type="rank"]').forEach(group => {
+    const label = LABELS[group.dataset.qid] || group.dataset.qid;
+    const parts = [];
+    group.querySelectorAll('.rank-input').forEach(inp => {
+      if (inp.value) parts.push(`${inp.getAttribute('data-label')} = Rank ${inp.value}`);
+    });
+    if (parts.length) responses[label] = parts.join(' | ');
+  });
+
+  try {
+    fetch(SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(responses)
+    });
+    // no-cors responses are opaque — show thank-you immediately after firing
+    showThankYou();
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M3 6l5 5 5-5M2 14h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Submit Responses`;
+    errEl.style.display = 'block';
+  }
+}
+
+function showThankYou() {
+  document.getElementById('form-view').style.display = 'none';
+  const ty = document.getElementById('thankyou');
+  ty.style.display = 'block';
+  document.getElementById('ty-timestamp').textContent =
+    'Submitted ' + new Date().toLocaleString('en-US', { dateStyle:'long', timeStyle:'short' });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
